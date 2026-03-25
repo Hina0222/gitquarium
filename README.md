@@ -1,36 +1,21 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# gitquarium
 
-## Getting Started
+GitHub 활동량에 따라 뒤로 헤엄치는 물고기를 README에 넣어보세요.
 
-First, run the development server:
+## Preview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+| 상태 | 조건 | 물고기 |
+|------|------|--------|
+| **ACTIVE** | 최근 24시간 내 활동 | 빠르게 헤엄치며 활발한 물방울 |
+| **IDLE** | 1~3일간 활동 없음 | 느리게 헤엄치며 적은 물방울 |
+| **SLEEP** | 3일 이상 활동 없음 | 정지 상태, 물방울 없음 |
+
+## 사용법
+
+GitHub README에 아래 마크다운을 추가하세요:
+
+```markdown
+![GitHub Aquarium](https://git-aquarium.vercel.app/api/aquarium/YOUR_GITHUB_USERNAME)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`YOUR_GITHUB_USERNAME`을 본인의 GitHub 유저네임으로 바꿔주세요.
