@@ -1,6 +1,9 @@
-import {MAX_COMMITS, type AnimationConfig} from './types';
+import {MAX_COMMITS, MAX_FISH, type AnimationConfig, type GitHubActivity} from './types';
 
-export function calculateAnimationConfig(commitCount: number): AnimationConfig {
+export function calculateAnimationConfig(activity: GitHubActivity): AnimationConfig {
+  const {commitCount, streakDays} = activity;
+  const fishCount = Math.min(1 + Math.floor(streakDays / 3), MAX_FISH);
+
   if (commitCount === 0) {
     return {
       swimDuration: 0,
@@ -8,6 +11,7 @@ export function calculateAnimationConfig(commitCount: number): AnimationConfig {
       opacity: 0.6,
       bubbleCount: 0,
       isSleeping: true,
+      fishCount,
     };
   }
 
@@ -19,5 +23,6 @@ export function calculateAnimationConfig(commitCount: number): AnimationConfig {
     opacity: 1.0,
     bubbleCount: Math.round((count / MAX_COMMITS) * 8),
     isSleeping: false,
+    fishCount,
   };
 }

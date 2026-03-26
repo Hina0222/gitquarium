@@ -1,21 +1,30 @@
 import type {AnimationConfig} from '../types';
 import {renderBackground} from './background';
 import {renderBubbles} from './bubbles';
-import {renderFish} from './fish';
+import {fishRegistry, SWIM_ZONES} from './fish';
 
 const WIDTH = 400;
 const HEIGHT = 200;
 
 export function composeSvg(config: AnimationConfig, username: string): string {
+  const count = Math.min(config.fishCount, fishRegistry.length, SWIM_ZONES.length);
+
+  const defs = fishRegistry
+    .slice(0, count)
+    .map((f) => f.defs)
+    .join('\n');
+
+  const fishes = fishRegistry
+    .slice(0, count)
+    .map((f, i) => f.render(config, SWIM_ZONES[i]))
+    .join('\n');
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${HEIGHT}" viewBox="0 0 ${WIDTH} ${HEIGHT}">
   <defs>
-    <radialGradient id="fishBody" cx="0.3" cy="0.3" r="0.7">
-      <stop offset="0%" stop-color="#ffe066"/>
-      <stop offset="100%" stop-color="#f4a832"/>
-    </radialGradient>
+    ${defs}
   </defs>
   ${renderBackground(WIDTH, HEIGHT)}
-  ${renderFish(config)}
+  ${fishes}
   ${renderBubbles(config.bubbleCount)}
   <text x="10" y="${HEIGHT - 10}" fill="white" font-size="10" font-family="sans-serif" opacity="0.5">@${username}</text>
 </svg>`;

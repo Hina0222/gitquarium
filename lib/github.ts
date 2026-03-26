@@ -1,4 +1,4 @@
-import {MAX_COMMITS} from './types';
+import {MAX_COMMITS, type GitHubActivity} from './types';
 
 export class GitHubApiError extends Error {
   constructor(
@@ -10,9 +10,33 @@ export class GitHubApiError extends Error {
   }
 }
 
-export async function fetchCommitCount(
+function calculateStreak(events: { created_at: string }[]): number {
+  const activeDates = new Set<string>();
+  for (const event of events) {
+    activeDates.add(event.created_at.substring(0, 10));
+  }
+
+  const sorted = [...activeDates].sort().reverse();
+  if (sorted.length === 0) return 0;
+
+  let streak = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i - 1] + 'T00:00:00Z');
+    const curr = new Date(sorted[i] + 'T00:00:00Z');
+    const diffMs = prev.getTime() - curr.getTime();
+    if (diffMs === 86_400_000) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+export async function fetchGitHubActivity(
   username: string,
-): Promise<number> {
+): Promise<GitHubActivity> {
   const headers: Record<string, string> = {
     'User-Agent': 'git-aquarium',
     Accept: 'application/vnd.github.v3+json',
@@ -53,6 +77,11 @@ export async function fetchCommitCount(
     }
   }
 
-  console.log(`[GitHub API] PushEvent count (3 days): ${commitCount}`);
-  return Math.min(commitCount, MAX_COMMITS);
+  const streakDays = calculateStreak(events);
+
+  console.log(`[GitHub API] PushEvent count (3 days): ${commitCount}, streak: ${streakDays} days`);
+  return {
+    commitCount: Math.min(commitCount, MAX_COMMITS),
+    streakDays,
+  };
 }
