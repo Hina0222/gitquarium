@@ -5,51 +5,39 @@ const CANVAS_H = 200;
 const CX = CANVAS_W / 2;
 const CY = CANVAS_H / 2;
 
-function lerp(center: number, target: number, scale: number): number {
-  return center + (target - center) * scale;
+const PADDING = 60;
+
+function rand(min: number, max: number): number {
+  return min + Math.random() * (max - min);
+}
+
+function randomPoint(scale: number): {x: number; y: number} {
+  const rangeX = (CANVAS_W - PADDING * 2) * scale;
+  const rangeY = (CANVAS_H - PADDING * 2) * scale;
+  return {
+    x: CX + rand(-rangeX / 2, rangeX / 2),
+    y: CY + rand(-rangeY / 2, rangeY / 2),
+  };
 }
 
 function buildSwimPath(scale: number): string {
-  const PADDING = 60;
-  // 기존 FAST 경로의 각 포인트를 캔버스 중심 기준으로 scale 적용
-  const points = [
-    // M start
-    {x: PADDING, y: CANVAS_H / 2},
-    // C1
-    {x: CANVAS_W * 0.3, y: PADDING},
-    {x: CANVAS_W * 0.7, y: CANVAS_H - PADDING},
-    {x: CANVAS_W - PADDING, y: CANVAS_H * 0.35},
-    // C2
-    {x: CANVAS_W * 0.85, y: PADDING * 0.8},
-    {x: CANVAS_W * 0.5, y: PADDING},
-    {x: CANVAS_W * 0.35, y: CANVAS_H * 0.45},
-    // C3
-    {x: CANVAS_W * 0.2, y: CANVAS_H * 0.6},
-    {x: CANVAS_W * 0.6, y: CANVAS_H - PADDING},
-    {x: CANVAS_W * 0.75, y: CANVAS_H * 0.55},
-    // C4
-    {x: CANVAS_W * 0.9, y: CANVAS_H * 0.4},
-    {x: CANVAS_W * 0.15, y: CANVAS_H * 0.3},
-    {x: PADDING, y: CANVAS_H / 2},
-  ];
+  // 시작점 = 끝점 (루프)
+  const start = randomPoint(scale);
+  // 4-segment 큐빅 베지어, 컨트롤 포인트를 랜덤 생성
+  const cp = Array.from({length: 12}, () => randomPoint(scale));
 
-  const s = points.map(p => ({
-    x: lerp(CX, p.x, scale),
-    y: lerp(CY, p.y, scale),
-  }));
-
-  return `M${s[0].x},${s[0].y}
-    C${s[1].x},${s[1].y} ${s[2].x},${s[2].y} ${s[3].x},${s[3].y}
-    C${s[4].x},${s[4].y} ${s[5].x},${s[5].y} ${s[6].x},${s[6].y}
-    C${s[7].x},${s[7].y} ${s[8].x},${s[8].y} ${s[9].x},${s[9].y}
-    C${s[10].x},${s[10].y} ${s[11].x},${s[11].y} ${s[12].x},${s[12].y}`;
+  return `M${start.x.toFixed(1)},${start.y.toFixed(1)}
+    C${cp[0].x.toFixed(1)},${cp[0].y.toFixed(1)} ${cp[1].x.toFixed(1)},${cp[1].y.toFixed(1)} ${cp[2].x.toFixed(1)},${cp[2].y.toFixed(1)}
+    C${cp[3].x.toFixed(1)},${cp[3].y.toFixed(1)} ${cp[4].x.toFixed(1)},${cp[4].y.toFixed(1)} ${cp[5].x.toFixed(1)},${cp[5].y.toFixed(1)}
+    C${cp[6].x.toFixed(1)},${cp[6].y.toFixed(1)} ${cp[7].x.toFixed(1)},${cp[7].y.toFixed(1)} ${cp[8].x.toFixed(1)},${cp[8].y.toFixed(1)}
+    C${cp[9].x.toFixed(1)},${cp[9].y.toFixed(1)} ${cp[10].x.toFixed(1)},${cp[10].y.toFixed(1)} ${start.x.toFixed(1)},${start.y.toFixed(1)}`;
 }
 
 export function renderFish(config: AnimationConfig): string {
   const {swimDuration, opacity, tailSpeed, isSleeping} = config;
 
   const swimAnimation = !isSleeping
-    ? `<animateMotion dur="${swimDuration}s" repeatCount="indefinite" rotate="auto" path="${buildSwimPath(swimDuration <= 2.5 ? 1.0 : swimDuration <= 4.0 ? 0.6 : 0.3)}"/>`
+    ? `<animateMotion dur="${swimDuration}s" repeatCount="indefinite" rotate="auto" path="${buildSwimPath(1.0)}"/>`
     : '';
 
   const tailAnimation = !isSleeping
