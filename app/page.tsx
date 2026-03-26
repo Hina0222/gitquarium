@@ -56,26 +56,31 @@ export default function Home() {
           <table className="w-full text-sm text-blue-50">
             <thead>
             <tr className="border-b border-white/10">
-              <th className="px-5 py-3 text-left font-semibold">상태</th>
-              <th className="px-5 py-3 text-left font-semibold">조건</th>
+              <th className="px-5 py-3 text-left font-semibold">커밋 수 (3일)</th>
+              <th className="px-5 py-3 text-left font-semibold">수영 속도</th>
               <th className="px-5 py-3 text-left font-semibold">시각 표현</th>
             </tr>
             </thead>
             <tbody>
             <tr className="border-b border-white/5">
-              <td className="px-5 py-3 font-mono">active</td>
-              <td className="px-5 py-3">24시간 이내 활동</td>
-              <td className="px-5 py-3">빠르게 수영 (2s 주기)</td>
+              <td className="px-5 py-3 font-mono">10+</td>
+              <td className="px-5 py-3">2s 주기</td>
+              <td className="px-5 py-3">최고 속도, 물방울 8개</td>
             </tr>
             <tr className="border-b border-white/5">
-              <td className="px-5 py-3 font-mono">idle</td>
-              <td className="px-5 py-3">1~3일 활동 없음</td>
-              <td className="px-5 py-3">느리게 수영 (5s 주기)</td>
+              <td className="px-5 py-3 font-mono">5</td>
+              <td className="px-5 py-3">12s 주기</td>
+              <td className="px-5 py-3">중간 속도, 물방울 4개</td>
+            </tr>
+            <tr className="border-b border-white/5">
+              <td className="px-5 py-3 font-mono">1</td>
+              <td className="px-5 py-3">20s 주기</td>
+              <td className="px-5 py-3">느린 속도, 물방울 1개</td>
             </tr>
             <tr>
-              <td className="px-5 py-3 font-mono">sleep</td>
-              <td className="px-5 py-3">3일 이상 활동 없음</td>
-              <td className="px-5 py-3">정지 + 투명도 감소</td>
+              <td className="px-5 py-3 font-mono">0</td>
+              <td className="px-5 py-3">정지</td>
+              <td className="px-5 py-3">수면 상태, 투명도 감소</td>
             </tr>
             </tbody>
           </table>

@@ -1,25 +1,23 @@
-import {
-  FishState,
-  StateThreshold,
-  STATE_CONFIGS,
-  type StateConfig,
-} from './types';
+import {MAX_COMMITS, type AnimationConfig} from './types';
 
-export function calculateState(lastActivity: Date | null): StateConfig {
-  if (!lastActivity) {
-    return STATE_CONFIGS[FishState.SLEEP];
+export function calculateAnimationConfig(commitCount: number): AnimationConfig {
+  if (commitCount === 0) {
+    return {
+      swimDuration: 0,
+      tailSpeed: 0,
+      opacity: 0.6,
+      bubbleCount: 0,
+      isSleeping: true,
+    };
   }
 
-  const hoursAgo =
-    (Date.now() - lastActivity.getTime()) / (1000 * 60 * 60);
+  const count = Math.min(commitCount, MAX_COMMITS);
 
-  if (hoursAgo <= StateThreshold.ACTIVE_MAX_HOURS) {
-    return STATE_CONFIGS[FishState.ACTIVE];
-  }
-
-  if (hoursAgo <= StateThreshold.IDLE_MAX_HOURS) {
-    return STATE_CONFIGS[FishState.IDLE];
-  }
-
-  return STATE_CONFIGS[FishState.SLEEP];
+  return {
+    swimDuration: 22 - count * 2,
+    tailSpeed: 1.1 - count * 0.1,
+    opacity: 1.0,
+    bubbleCount: Math.round((count / MAX_COMMITS) * 8),
+    isSleeping: false,
+  };
 }

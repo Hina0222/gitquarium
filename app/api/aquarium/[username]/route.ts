@@ -1,6 +1,6 @@
 import type {NextRequest} from 'next/server';
-import {fetchLatestActivity, GitHubApiError} from '@/lib/github';
-import {calculateState} from '@/lib/state';
+import {fetchCommitCount, GitHubApiError} from '@/lib/github';
+import {calculateAnimationConfig} from '@/lib/state';
 import {composeSvg} from '@/lib/svg/compose';
 
 export const dynamic = 'force-dynamic';
@@ -12,9 +12,9 @@ export async function GET(
   const {username} = await ctx.params;
 
   try {
-    const lastActivity = await fetchLatestActivity(username);
-    const stateConfig = calculateState(lastActivity);
-    const svg = composeSvg(stateConfig, username);
+    const commitCount = await fetchCommitCount(username);
+    const config = calculateAnimationConfig(commitCount);
+    const svg = composeSvg(config, username);
 
     return new Response(svg, {
       status: 200,
@@ -27,7 +27,7 @@ export async function GET(
     if (error instanceof GitHubApiError) {
       if (error.statusCode === 404) {
         const errorSvg = composeSvg(
-          calculateState(null),
+          calculateAnimationConfig(0),
           `${username} (not found)`,
         );
         return new Response(errorSvg, {
@@ -40,7 +40,7 @@ export async function GET(
       }
       if (error.statusCode === 403) {
         const rateLimitSvg = composeSvg(
-          calculateState(null),
+          calculateAnimationConfig(0),
           `${username} (rate limited)`,
         );
         return new Response(rateLimitSvg, {
@@ -53,7 +53,7 @@ export async function GET(
       }
     }
 
-    const fallbackSvg = composeSvg(calculateState(null), username);
+    const fallbackSvg = composeSvg(calculateAnimationConfig(0), username);
     return new Response(fallbackSvg, {
       status: 200,
       headers: {

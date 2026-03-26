@@ -7,6 +7,9 @@ export function renderBubbles(count: number): string {
     {cx: 310, startY: 130, endY: 15, r: 2.5, delay: '1.5s', dur: '2.8s'},
     {cx: 150, startY: 150, endY: 8, r: 1.8, delay: '2.2s', dur: '3.2s'},
     {cx: 260, startY: 145, endY: 12, r: 2.2, delay: '0.5s', dur: '3.8s'},
+    {cx: 120, startY: 155, endY: 10, r: 2.0, delay: '1.0s', dur: '3.3s'},
+    {cx: 340, startY: 135, endY: 8, r: 2.8, delay: '1.8s', dur: '2.9s'},
+    {cx: 220, startY: 148, endY: 14, r: 1.5, delay: '2.8s', dur: '3.6s'},
   ];
 
   return bubbleConfigs

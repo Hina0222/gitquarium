@@ -1,3 +1,5 @@
+import {MAX_COMMITS} from './types';
+
 export class GitHubApiError extends Error {
   constructor(
     public statusCode: number,
@@ -8,9 +10,9 @@ export class GitHubApiError extends Error {
   }
 }
 
-export async function fetchLatestActivity(
+export async function fetchCommitCount(
   username: string,
-): Promise<Date | null> {
+): Promise<number> {
   const headers: Record<string, string> = {
     'User-Agent': 'git-aquarium',
     Accept: 'application/vnd.github.v3+json',
@@ -20,7 +22,7 @@ export async function fetchLatestActivity(
     headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
   }
 
-  const url = `https://api.github.com/users/${encodeURIComponent(username)}/events?per_page=1`;
+  const url = `https://api.github.com/users/${encodeURIComponent(username)}/events?per_page=100`;
   console.log(`[GitHub API] GET ${url}`);
 
   const res = await fetch(url, {headers});
@@ -37,11 +39,20 @@ export async function fetchLatestActivity(
     throw new GitHubApiError(res.status, `GitHub API error: ${res.statusText}`);
   }
 
-  const events: { created_at: string }[] = await res.json();
+  const events: { type: string; created_at: string }[] = await res.json();
 
-  if (events.length === 0) {
-    return null;
+  const threeDaysAgo = Date.now() - 72 * 60 * 60 * 1000;
+  let commitCount = 0;
+
+  for (const event of events) {
+    if (new Date(event.created_at).getTime() < threeDaysAgo) {
+      break;
+    }
+    if (event.type === 'PushEvent') {
+      commitCount++;
+    }
   }
 
-  return new Date(events[0].created_at);
+  console.log(`[GitHub API] PushEvent count (3 days): ${commitCount}`);
+  return Math.min(commitCount, MAX_COMMITS);
 }

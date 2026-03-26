@@ -1,43 +1,62 @@
-import {SwimDuration, TailSpeed, type StateConfig} from '../types';
+import type {AnimationConfig} from '../types';
 
-// 물고기 크기를 고려한 패딩 (몸통 rx=35 + 꼬리 22)
-const PADDING = 60;
 const CANVAS_W = 400;
 const CANVAS_H = 200;
+const CX = CANVAS_W / 2;
+const CY = CANVAS_H / 2;
 
-// 캔버스 전체를 돌아다니는 경로 (SVG path)
-// active: 넓고 빠르게, idle: 좁고 느리게
-function buildSwimPath(state: SwimDuration): string {
-  if (state === SwimDuration.FAST) {
-    // 캔버스 전체를 크게 순회
-    return `M${PADDING},${CANVAS_H / 2}
-      C${CANVAS_W * 0.3},${PADDING} ${CANVAS_W * 0.7},${CANVAS_H - PADDING} ${CANVAS_W - PADDING},${CANVAS_H * 0.35}
-      C${CANVAS_W * 0.85},${PADDING * 0.8} ${CANVAS_W * 0.5},${PADDING} ${CANVAS_W * 0.35},${CANVAS_H * 0.45}
-      C${CANVAS_W * 0.2},${CANVAS_H * 0.6} ${CANVAS_W * 0.6},${CANVAS_H - PADDING} ${CANVAS_W * 0.75},${CANVAS_H * 0.55}
-      C${CANVAS_W * 0.9},${CANVAS_H * 0.4} ${CANVAS_W * 0.15},${CANVAS_H * 0.3} ${PADDING},${CANVAS_H / 2}`;
-  }
-  // idle: 중앙 부근에서 느긋하게 이동
-  return `M${CANVAS_W * 0.25},${CANVAS_H * 0.5}
-    C${CANVAS_W * 0.4},${CANVAS_H * 0.3} ${CANVAS_W * 0.6},${CANVAS_H * 0.65} ${CANVAS_W * 0.7},${CANVAS_H * 0.45}
-    C${CANVAS_W * 0.75},${CANVAS_H * 0.35} ${CANVAS_W * 0.5},${CANVAS_H * 0.55} ${CANVAS_W * 0.25},${CANVAS_H * 0.5}`;
+function lerp(center: number, target: number, scale: number): number {
+  return center + (target - center) * scale;
 }
 
-export function renderFish(config: StateConfig): string {
-  const {animationDuration, opacity, tailSpeed} = config;
-  const hasSwimAnimation = animationDuration !== SwimDuration.NONE;
-  const hasTailAnimation = tailSpeed !== TailSpeed.NONE;
+function buildSwimPath(scale: number): string {
+  const PADDING = 60;
+  // 기존 FAST 경로의 각 포인트를 캔버스 중심 기준으로 scale 적용
+  const points = [
+    // M start
+    {x: PADDING, y: CANVAS_H / 2},
+    // C1
+    {x: CANVAS_W * 0.3, y: PADDING},
+    {x: CANVAS_W * 0.7, y: CANVAS_H - PADDING},
+    {x: CANVAS_W - PADDING, y: CANVAS_H * 0.35},
+    // C2
+    {x: CANVAS_W * 0.85, y: PADDING * 0.8},
+    {x: CANVAS_W * 0.5, y: PADDING},
+    {x: CANVAS_W * 0.35, y: CANVAS_H * 0.45},
+    // C3
+    {x: CANVAS_W * 0.2, y: CANVAS_H * 0.6},
+    {x: CANVAS_W * 0.6, y: CANVAS_H - PADDING},
+    {x: CANVAS_W * 0.75, y: CANVAS_H * 0.55},
+    // C4
+    {x: CANVAS_W * 0.9, y: CANVAS_H * 0.4},
+    {x: CANVAS_W * 0.15, y: CANVAS_H * 0.3},
+    {x: PADDING, y: CANVAS_H / 2},
+  ];
 
-  // animateMotion으로 경로를 따라 이동 + rotate="auto"로 진행 방향에 맞춰 회전
-  const swimAnimation = hasSwimAnimation
-    ? `<animateMotion dur="${animationDuration === SwimDuration.FAST ? '8s' : '15s'}" repeatCount="indefinite" rotate="auto" path="${buildSwimPath(animationDuration)}"/>`
+  const s = points.map(p => ({
+    x: lerp(CX, p.x, scale),
+    y: lerp(CY, p.y, scale),
+  }));
+
+  return `M${s[0].x},${s[0].y}
+    C${s[1].x},${s[1].y} ${s[2].x},${s[2].y} ${s[3].x},${s[3].y}
+    C${s[4].x},${s[4].y} ${s[5].x},${s[5].y} ${s[6].x},${s[6].y}
+    C${s[7].x},${s[7].y} ${s[8].x},${s[8].y} ${s[9].x},${s[9].y}
+    C${s[10].x},${s[10].y} ${s[11].x},${s[11].y} ${s[12].x},${s[12].y}`;
+}
+
+export function renderFish(config: AnimationConfig): string {
+  const {swimDuration, opacity, tailSpeed, isSleeping} = config;
+
+  const swimAnimation = !isSleeping
+    ? `<animateMotion dur="${swimDuration}s" repeatCount="indefinite" rotate="auto" path="${buildSwimPath(swimDuration <= 2.5 ? 1.0 : swimDuration <= 4.0 ? 0.6 : 0.3)}"/>`
     : '';
 
-  const tailAnimation = hasTailAnimation
-    ? `<animateTransform attributeName="transform" type="rotate" values="-15,0,0; 15,0,0; -15,0,0" dur="${tailSpeed}" repeatCount="indefinite"/>`
+  const tailAnimation = !isSleeping
+    ? `<animateTransform attributeName="transform" type="rotate" values="-15,0,0; 15,0,0; -15,0,0" dur="${tailSpeed}s" repeatCount="indefinite"/>`
     : '';
 
-  // sleep 상태: 캔버스 중앙에 고정
-  const sleepTranslate = !hasSwimAnimation ? 'transform="translate(200, 100)"' : '';
+  const sleepTranslate = isSleeping ? 'transform="translate(200, 100)"' : '';
 
   return `
     <g opacity="${opacity}" ${sleepTranslate}>
@@ -51,7 +70,7 @@ export function renderFish(config: StateConfig): string {
       <polygon points="-5,-18 5,-30 15,-16" fill="#e8912d" opacity="0.85"/>
       <!-- pectoral fin -->
       <polygon points="5,8 18,20 0,18" fill="#e8912d" opacity="0.7">
-        ${hasTailAnimation ? `<animateTransform attributeName="transform" type="rotate" values="0,5,8; 15,5,8; 0,5,8" dur="${tailSpeed}" repeatCount="indefinite"/>` : ''}
+        ${!isSleeping ? `<animateTransform attributeName="transform" type="rotate" values="0,5,8; 15,5,8; 0,5,8" dur="${tailSpeed}s" repeatCount="indefinite"/>` : ''}
       </polygon>
       <!-- tail -->
       <g transform="translate(35, 0)">
