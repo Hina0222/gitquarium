@@ -18,7 +18,7 @@ export function calculateAnimationConfig(activity: GitHubActivity): AnimationCon
   const count = Math.min(commitCount, MAX_COMMITS);
 
   return {
-    swimDuration: 22 - count * 2,
+    swimDuration: 26 - count * 2,
     tailSpeed: 1.1 - count * 0.1,
     opacity: 1.0,
     bubbleCount: Math.round((count / MAX_COMMITS) * 8),
